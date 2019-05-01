@@ -4,7 +4,7 @@
     private $host = 'localhost';
     private $db_name = 'myblog';
     private $username = 'root';
-    private $password = 'root';
+    private $password = 'password';
     private $conn;
 
     // DB Connect
