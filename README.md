@@ -1,2 +1,2 @@
-# blog-backend
-PHP api, security and login for a blog
+# PHP Blog Backend
+A simple REST CRUD PHP API, for a development blog
