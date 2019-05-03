@@ -8,12 +8,8 @@
   include_once '../../config/Database.php';
   include_once '../../models/Post.php';
 
-  // Instantiate DB & connect
-  $database = new Database();
-  $db = $database->connect();
-
   // Instantiate blog post object
-  $post = new Post($db);
+  $post = new Post();
 
   // Get raw posted data
   $data = json_decode(file_get_contents("php://input"));

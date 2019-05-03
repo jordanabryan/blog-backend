@@ -14,57 +14,59 @@
     public $author;
     public $created_at;
 
-    // Constructor with DB
-    public function __construct($db) {
-      $this->conn = $db;
+    // Constructor with DB static methods
+    public function __construct() {
+      $this->conn = Database::getInstance()->connect();
     }
 
     // Get Posts
     public function read() {
-      // Create query
-      $query = 'SELECT c.name as category_name, p.id, p.category_id, p.title, p.body, p.author, p.created_at
+
+      $query = 'SELECT
+          c.name as category_name,
+          p.id,
+          p.category_id,
+          p.title,
+          p.body,
+          p.author,
+          p.created_at
         FROM ' . $this->table . ' p
-        LEFT JOIN
-          categories c ON p.category_id = c.id
-        ORDER BY
-          p.id DESC';
+        LEFT JOIN categories c
+        ON p.category_id = c.id
+        ORDER BY p.id DESC';
 
-      // Prepare statement
-      $stmt = $this->conn->prepare($query);
+      Database::getInstance()->setQuery($query);
 
-      // Execute query
-      $stmt->execute();
+      $result = Database::getInstance()->getDBArray();
 
-      return $stmt;
+      return $result;
+
     }
 
     //get single post
     public function read_single(){
 
-      $query = 'SELECT c.name as category_name, p.id, p.category_id, p.title, p.body, p.author, p.created_at
+      $query = 'SELECT
+          c.name as category_name,
+          p.id,
+          p.category_id,
+          p.title,
+          p.body,
+          p.author,
+          p.created_at
         FROM ' . $this->table . ' p
-        LEFT JOIN
-          categories c ON p.category_id = c.id
-        WHERE
-          p.id = ?
+        LEFT JOIN categories c
+        ON p.category_id = c.id
+        WHERE p.id = ?
         LIMIT 1';
 
-      $stmt = $this->conn->prepare($query);
+      Database::getInstance()->setQuery($query);
 
-      //bind the id
-      $stmt->bindParam(1, $this->id);
+      Database::getInstance()->bindParams([1 => $this->id]);
 
-      //execute the query
-      $stmt->execute();
+      $result = Database::getInstance()->getDBRow();
 
-      $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-      //set properties
-      $this->title = $row['title'];
-      $this->body = $row['body'];
-      $this->author = $row['author'];
-      $this->category_id = $row['category_id'];
-      $this->category_name = $row['category_name'];
+      return $result;
 
     }
 
@@ -79,30 +81,27 @@
           author = :author,
           category_id = :category_id';
 
-      // Prepare statement
-      $stmt = $this->conn->prepare($query);
 
-      // Clean data
-      $this->title = htmlspecialchars(strip_tags($this->title));
-      $this->body = htmlspecialchars(strip_tags($this->body));
-      $this->author = htmlspecialchars(strip_tags($this->author));
-      $this->category_id = htmlspecialchars(strip_tags($this->category_id));
+      Database::getInstance()->setQuery($query);
 
-      // Bind data
-      $stmt->bindParam(':title', $this->title);
-      $stmt->bindParam(':body', $this->body);
-      $stmt->bindParam(':author', $this->author);
-      $stmt->bindParam(':category_id', $this->category_id);
+      $cleanData = Database::getInstance()->cleanData([
+        'title' => $this->title,
+        'body' => $this->body,
+        'author' => $this->author,
+        'category_id' => $this->category_id
+      ]);
 
-      // Execute query
-      if($stmt->execute()) {
-        return true;
-      }
+      Database::getInstance()->bindParams([
+        ':title' => $cleanData['title'],
+        ':body' => $cleanData['body'],
+        ':author' => $cleanData['author'],
+        ':category_id' => $cleanData['category_id']
+      ]);
 
-      // Print error if something goes wrong
-      printf("Error: %s.\n", $stmt->error);
+      $result = Database::getInstance()->query();
 
-      return false;
+      return $result;
+
     }
 
     //update post
@@ -118,31 +117,25 @@
         WHERE id = :id';
 
       // Prepare statement
-      $stmt = $this->conn->prepare($query);
+      Database::getInstance()->setQuery($query);
 
-      // Clean data
-      $this->title = htmlspecialchars(strip_tags($this->title));
-      $this->body = htmlspecialchars(strip_tags($this->body));
-      $this->author = htmlspecialchars(strip_tags($this->author));
-      $this->category_id = htmlspecialchars(strip_tags($this->category_id));
-      $this->id = htmlspecialchars(strip_tags($this->id));
+      $this->title = Database::getInstance()->cleanData($this->title);
+      $this->body = Database::getInstance()->cleanData($this->body);
+      $this->author = Database::getInstance()->cleanData($this->author);
+      $this->category_id = Database::getInstance()->cleanData($this->category_id);
+      $this->id = Database::getInstance()->cleanData($this->id);
 
-      // Bind data
-      $stmt->bindParam(':title', $this->title);
-      $stmt->bindParam(':body', $this->body);
-      $stmt->bindParam(':author', $this->author);
-      $stmt->bindParam(':category_id', $this->category_id);
-      $stmt->bindParam(':id', $this->id);
+      Database::getInstance()->bindParams([
+        ':title' => $this->title,
+        ':body' => $this->body,
+        ':author' => $this->author,
+        ':category_id' => $this->category_id,
+        ':id' => $this->id
+      ]);
 
-      // Execute query
-      if($stmt->execute()) {
-        return true;
-      }
+      $result = Database::getInstance()->query();
 
-      // Print error if something goes wrong
-      printf("Error: %s.\n", $stmt->error);
-
-      return false;
+      return $result;
 
     }
 
@@ -152,22 +145,13 @@
       //create query
       $query = 'DELETE FROM ' . $this->table . ' WHERE id = :id';
 
-      // Prepare statement
-      $stmt = $this->conn->prepare($query);
+      Database::getInstance()->setQuery($query);
 
-      $this->id = htmlspecialchars(strip_tags($this->id));
+      Database::getInstance()->bindParam(':id', $this->id);
 
-      $stmt->bindParam(':id', $this->id);
+      $result = Database::getInstance()->query();
 
-      // Execute query
-      if($stmt->execute()) {
-        return true;
-      }
-
-      // Print error if something goes wrong
-      printf("Error: %s.\n", $stmt->error);
-
-      return false;
+      return $result;
 
     }
 
