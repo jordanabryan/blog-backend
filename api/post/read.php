@@ -16,12 +16,25 @@
   if($result) {
 
     //turn to JSON and output
-    echo json_encode($result);
+    echo json_encode(
+      array(
+        "status" => 200,
+        "error" => false,
+        "errormessage" => null,
+        "response" => $result
+      )
+    );
+
 
   } else {
     //no posts
     echo json_encode(
-        array('message' => 'no posts found')
+      array(
+        "status" => 400,
+        "error" => true,
+        "errormessage" => 'no posts found',
+        "response" => null
+      )
     );
 
   }

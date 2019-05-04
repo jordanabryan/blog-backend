@@ -21,11 +21,25 @@
 
   // Create post
   if($post->create()) {
+
     echo json_encode(
-      array('message' => 'Post Created')
+      array(
+        "status" => 200,
+        "error" => false,
+        "errormessage" => null,
+        "response" => 'Post created'
+      )
     );
+
   } else {
+
     echo json_encode(
-      array('message' => 'Post Not Created')
+      array(
+        "status" => 400,
+        "error" => true,
+        "errormessage" => 'Post not created',
+        "response" => null
+      )
     );
+
   }
