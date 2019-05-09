@@ -1,10 +1,14 @@
 <?php
+
+  include "autoload.php";
+
   class Database {
     // DB Params
-    private $host = 'localhost';
-    private $db_name = 'myblog';
-    private $username = 'root';
-    private $password = 'password';
+    private $host = env('DB_HOST');
+    private $db_name = env('DB_NAME');
+    private $username = env('DB_USERNAME');
+    private $password = env('DB_PASSWORD');
+    private $port = env('DB_PORT');
     private $conn;
     private $query;
     private $stmt;
